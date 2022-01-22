@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     # Project apps
     'app_urls.apps.AppUrlsConfig',
+    'accounts.apps.AccountsConfig',
     # Third-party apps
     'widget_tweaks'
 ]
@@ -129,3 +130,6 @@ STATICFILES_DIRS = [
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# User model
+AUTH_USER_MODEL = 'accounts.User'
