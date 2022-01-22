@@ -49,7 +49,11 @@ class Link(models.Model):
 
     def get_preview_path(self):
         return reverse('url_shortener:preview', args=(self.alias,))
-
+    
+    def get_clicks(self):
+        clicks = Click.objects.filter(link=self)
+        clicks = clicks.aggregate(total_clicks=models.Sum('clicks_count'), unique_users=models.Count('ip_address'))
+        return clicks
 
 class Click(models.Model):
     link = models.ForeignKey(to=Link, on_delete=models.CASCADE)

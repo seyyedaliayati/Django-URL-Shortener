@@ -13,19 +13,21 @@
   <table class="table table-hover">
     <thead>
       <tr>
-        <td>Long URL</td>
-        <td>Created</td>
         <td>Short URL</td>
-        <td>Clicks</td>
+        <td>Long URL</td>
+        <td>Total Clicks</td>
+        <td>Unique Users (IPs)</td>
+        <td>Created</td>
       </tr>
     </thead>
     <tbody>
     {% for link in links %}
       <tr>
-        <td><a href="{{ link.url }}">{{ link.get_long_url_truncated }}</a></td>
-        <td>{{ link.get_date_created_human_friendly }}</td>
         <td><a href="{{ link.get_preview_path }}">{{ link.alias }}</a></td>
-        <td>{{ link.clicks_count }}</td>
+        <td><a href="{{ link.url }}">{{ link.get_long_url_truncated }}</a></td>
+        <td>{{ link.get_clicks.total_clicks }}</td>
+        <td>{{ link.get_clicks.unique_users }}</td>
+        <td>{{ link.get_date_created_human_friendly }}</td>
       </tr>
     {% endfor %}
     </tbody>
