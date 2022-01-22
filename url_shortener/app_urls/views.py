@@ -1,16 +1,20 @@
 from django.urls import reverse
 from django.shortcuts import render, get_object_or_404
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.http import (HttpResponseRedirect,
+                         HttpResponseForbidden,
                          Http404,
                          HttpResponsePermanentRedirect)
+from django.utils.timezone import datetime
 
 from .misc import (hash_encode,
                    get_absolute_short_url)
 from .forms import URLShortenerForm
-from .models import Link
+from .models import Click, Link
 
 
+@login_required
 def index(request):
     if request.method == 'POST':
         form = URLShortenerForm(request.POST)
@@ -18,7 +22,7 @@ def index(request):
             original_alias = form.cleaned_data['alias']
             alias = original_alias.lower()
             url = form.cleaned_data['url']
-            new_link = Link(url=url)
+            new_link = Link(user=request.user, url=url)
             try:
                 latest_link = Link.objects.latest('id')
                 if Link.objects.filter(alias__exact=alias):
@@ -42,24 +46,47 @@ def index(request):
     })
 
 
+@login_required
 def preview(request, alias):
     link = get_object_or_404(Link, alias__iexact=alias)
+    if link.user != request.user:
+        return HttpResponseForbidden()
     return render(request, 'url_shortener/preview.html', {
         'alias': alias,
         'absolute_short_url': get_absolute_short_url(request, alias, remove_schema=False),
         'url': link.url,
     })
 
+# Move this method
+def get_client_ip(request):
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(',')[0]
+    else:
+        ip = request.META.get('REMOTE_ADDR')
+    return ip
+
+def process_new_click(request, link):
+    today = datetime.today()
+    click, _ = Click.objects.get_or_create(
+        link=link,
+        clicked_date=today,
+        ip_address=get_client_ip(request)
+    )
+    click.clicks_count += 1
+    click.save()
+    return click
 
 def redirect(request, alias, extra=''):
     link = get_object_or_404(Link, alias__iexact=alias)
-    link.clicks_count += 1
     link.save()
+    process_new_click(request, link)
     return HttpResponsePermanentRedirect(link.url + extra)
 
 
+@login_required
 def analytics(request):
-    links = list(Link.objects.all().order_by('-id'))
+    links = list(Link.objects.filter(user=request.user).order_by('-id'))
     if not links:
         return render(request, 'url_shortener/analytics.html')
 

@@ -1,13 +1,19 @@
-import imp
+from statistics import mode
 from urllib.parse import urlparse
 
 from django.db import models
 from django.urls import reverse
 from django.core.validators import RegexValidator
+from django.contrib.auth import get_user_model
 
 from django.utils.translation import gettext_lazy as _
 
+
+User = get_user_model()
+
+    
 class Link(models.Model):
+    user = models.ForeignKey(to=User, on_delete=models.CASCADE)
     url = models.URLField(max_length=2048)
     alias = models.CharField(max_length=255, unique=True, validators=[
         RegexValidator(
@@ -16,7 +22,6 @@ class Link(models.Model):
             message='Alias can only contain lowercase alphabets, numerals, underscores and hyphens',
         ),
     ])
-    clicks_count = models.PositiveIntegerField(default=0)
     date_created = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -45,7 +50,15 @@ class Link(models.Model):
 
     def get_preview_path(self):
         return reverse('url_shortener:preview', args=(self.alias,))
-    
 
+
+class Click(models.Model):
+    link = models.ForeignKey(to=Link, on_delete=models.CASCADE)
+    clicked_date = models.DateField(auto_now_add=True)
+    ip_address = models.GenericIPAddressField()
+    clicks_count = models.PositiveIntegerField(default=0)
+
+    def __str__(self):
+        return f"{self.link.alias}: {self.clicks_count}"
 
 
