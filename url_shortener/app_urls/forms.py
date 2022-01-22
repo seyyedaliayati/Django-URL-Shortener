@@ -9,7 +9,16 @@ _url = Link._meta.get_field('url')
 
 
 class URLShortenerForm(forms.Form):
-
+    url = forms.URLField(
+        max_length=_url.max_length,
+        required=True,
+        help_text=_("The URL you want to shorten."),
+        label=_('Long URL to shorten'),
+        widget=forms.URLInput(
+            attrs={'placeholder': 'http://www.example.com/index.php?id=321&redirect=1&guest&coords=1,1,3,32,53',
+                   'required': 'true'},
+        ),
+    )
     alias = forms.CharField(
         max_length=_alias.max_length,
         required=False,
@@ -21,15 +30,4 @@ class URLShortenerForm(forms.Form):
             code='invalid_alias',
             message='Alias can only contain alphabets, numerals, underscores and hyphens',
         )]
-    )
-
-    url = forms.URLField(
-        max_length=_url.max_length,
-        required=True,
-        help_text=_("The URL you want to shorten."),
-        label=_('Long URL to shorten'),
-        widget=forms.URLInput(
-            attrs={'placeholder': 'http://www.example.com/index.php?id=321&redirect=1&guest&coords=1,1,3,32,53',
-                   'required': 'true'},
-        ),
     )

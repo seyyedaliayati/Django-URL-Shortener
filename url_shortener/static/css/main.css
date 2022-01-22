@@ -15,6 +15,9 @@
   }
   #footer {
     background-color: #f5f5f5;
+    position: absolute;
+    left: 0;
+    bottom: 0;
   }
   .credit {
     margin: 20px 0;

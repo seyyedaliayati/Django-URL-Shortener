@@ -41,7 +41,7 @@ INSTALLED_APPS = [
     'app_urls.apps.AppUrlsConfig',
     'accounts.apps.AccountsConfig',
     # Third-party apps
-    'widget_tweaks'
+    'bootstrap4',
 ]
 
 MIDDLEWARE = [
