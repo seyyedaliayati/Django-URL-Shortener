@@ -106,11 +106,11 @@ class TestRedirect(TestCase):
         # self.assertEqual(link.clicks_count, 0)
 
 
-def create_link(url):
+def create_link(user, url):
     """
     Helper function create a link.
     """
-    link = Link.objects.create(url=url)
+    link = Link.objects.create(user=user, url=url)
     link.alias = hash_encode(link.id)
     link.save()
     return link
@@ -119,6 +119,14 @@ def create_link(url):
 class TestIndexView(TestCase):
 
     maxDiff = None
+
+    def setUp(self) -> None:
+        self.user = User.objects.create(username='user')
+        self.user2 = User.objects.create(username='user2')
+        
+        self.authenticated_client = Client()
+        self.authenticated_client.force_login(user=self.user)
+        return super().setUp()
 
     def assert_link_created(self, response, alias):
         """
@@ -138,7 +146,7 @@ class TestIndexView(TestCase):
         Submitting index form with no alias specified should
         create a link with auto-generated alias.
         """
-        response = self.client.post(reverse('url_shortener:index'), {
+        response = self.authenticated_client.post(reverse('url_shortener:index'), {
             'url': URL,
         }, follow=True)
         self.assert_link_created(response, hash_encode(1))
@@ -148,7 +156,7 @@ class TestIndexView(TestCase):
         Submitted index form with a specified alias should create
         a link with the specified alias.
         """
-        response = self.client.post(reverse('url_shortener:index'), {
+        response = self.authenticated_client.post(reverse('url_shortener:index'), {
             'url': URL,
             'alias': 'whatever',
         }, follow=True)
@@ -159,9 +167,9 @@ class TestIndexView(TestCase):
         Even if the database was pre-populated, submitting the form
         with no alias should create a new link as expected.
         """
-        create_link(URL)
-        latest_link = create_link(URL)
-        response = self.client.post(reverse('url_shortener:index'), {
+        create_link(self.user, URL)
+        latest_link = create_link(self.user, URL)
+        response = self.authenticated_client.post(reverse('url_shortener:index'), {
             'url': URL,
         }, follow=True)
         self.assert_link_created(response, hash_encode(latest_link.id + 1))
@@ -171,9 +179,9 @@ class TestIndexView(TestCase):
         Even if the database was pre-populated, submitting the form
         with a given alias should create a new link as expected.
         """
-        create_link(URL)
-        create_link(URL)
-        response = self.client.post(reverse('url_shortener:index'), {
+        create_link(self.user, URL)
+        create_link(self.user, URL)
+        response = self.authenticated_client.post(reverse('url_shortener:index'), {
             'url': URL,
             'alias': 'non-conflicting-alias',
         }, follow=True)
@@ -184,9 +192,9 @@ class TestIndexView(TestCase):
         In case of a conflicting alias, auto-generated alias should be used
         and an appropriate message displayed.
         """
-        link1 = create_link(URL)
-        link2 = create_link(URL)
-        response = self.client.post(reverse('url_shortener:index'), {
+        link1 = create_link(self.user, URL)
+        link2 = create_link(self.user, URL)
+        response = self.authenticated_client.post(reverse('url_shortener:index'), {
             'url': URL,
             'alias': link1.alias,  # Uh oh, conflicts with the first link
         }, follow=True)
@@ -199,7 +207,7 @@ class TestIndexView(TestCase):
         Index page when POSTed with no URL and no alias, should
         return an appropriate error message.
         """
-        response = self.client.post(reverse('url_shortener:index'), {}, follow=True)
+        response = self.authenticated_client.post(reverse('url_shortener:index'), {}, follow=True)
         self.assertContains(response, 'Error')
         self.assertContains(response, 'field is required')
         self.assertTemplateUsed('url_shortener/index.html')
@@ -209,7 +217,7 @@ class TestIndexView(TestCase):
         Index page when POSTed with no URL and a valid alias, should
         return an appropriate error message.
         """
-        response = self.client.post(reverse('url_shortener:index'), {
+        response = self.authenticated_client.post(reverse('url_shortener:index'), {
             'alias': 'valid_alias',
         })
         self.assertContains(response, 'Error')
@@ -221,7 +229,7 @@ class TestIndexView(TestCase):
         Index page when POSTed with no URL and an invalid alias, should
         return an appropriate error message.
         """
-        response = self.client.post(reverse('url_shortener:index'), {
+        response = self.authenticated_client.post(reverse('url_shortener:index'), {
             'alias': '/invalid/alias',
         })
         self.assertContains(response, 'Error')
@@ -235,7 +243,7 @@ class TestIndexView(TestCase):
         Index page when POSTed invalid alias to, should return an appropriate
         error message.
         """
-        response = self.client.post(reverse('url_shortener:index'), {
+        response = self.authenticated_client.post(reverse('url_shortener:index'), {
             'url': URL,
             'alias': '/this/is/an/invalid/alias',
         })
@@ -250,12 +258,12 @@ class TestIndexView(TestCase):
         created a Link with a given alias, multiple combinations of that
         alias shouldn't be allowed.
         """
-        response = self.client.post(reverse('url_shortener:index'), {
+        response = self.authenticated_client.post(reverse('url_shortener:index'), {
             'url': URL,
             'alias': 'A-Good-Alias',
         }, follow=True)
         self.assert_link_created(response, 'A-Good-Alias')
-        response = self.client.post(reverse('url_shortener:index'), {
+        response = self.authenticated_client.post(reverse('url_shortener:index'), {
             'url': URL,
             'alias': 'a-good-alias',
         })
@@ -267,7 +275,7 @@ class TestIndexView(TestCase):
         Index page when POSTed invalid URL to, should return an appropriate
         error message.
         """
-        response = self.client.post(reverse('url_shortener:index'), {
+        response = self.authenticated_client.post(reverse('url_shortener:index'), {
             'url': '/this/is/an/invalid/url',
         })
         self.assertContains(response, 'Error')
@@ -279,7 +287,7 @@ class TestIndexView(TestCase):
         Index page when POSTed a URL too long to should return an appropriate
         error message.
         """
-        response = self.client.post(reverse('url_shortener:index'), {
+        response = self.authenticated_client.post(reverse('url_shortener:index'), {
             'url': URL + '?' + ''.join([str(c) for c in range(3000)]),
         })
         self.assertContains(response, 'Error')
@@ -292,7 +300,7 @@ class TestIndexView(TestCase):
         Index page when POSTed an alias too long to should return an appropriate
         error message.
         """
-        response = self.client.post(reverse('url_shortener:index'), {
+        response = self.authenticated_client.post(reverse('url_shortener:index'), {
             'url': URL,
             'alias': ''.join([hash_encode(i) for i in range(300)]),
         })
@@ -300,6 +308,16 @@ class TestIndexView(TestCase):
         self.assertContains(response, 'length')
         self.assertContains(response, '255')
         self.assertTemplateUsed('url_shortener/index.html')
+    
+    def test_index_not_authenticated(self):
+        """
+        Index page required authentication because only authenticated users can create short links.
+        """
+        response = self.client.post(reverse('url_shortener:index'), {
+            'url': URL,
+            'alias': 'test-alias-not-auth'
+        })
+        self.assertEqual(response.status_code, 302)
 
 
 class TestURLShortenerFormValidation(TestCase):
