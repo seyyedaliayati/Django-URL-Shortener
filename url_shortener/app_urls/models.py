@@ -1,4 +1,3 @@
-from statistics import mode
 from urllib.parse import urlparse
 
 from django.db import models
