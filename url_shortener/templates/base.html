@@ -20,16 +20,26 @@
         <h1><a href="{% url 'url_shortener:index' %}">URL Shortener</a></h1>
         <p>Shorten your long URLs and share them with your friends!</p>
         <ul class="nav nav-tabs" style="border: 0;">
-          <li role="presentation" class="{% block index_nav %}{% endblock %}"><a href="{% url 'url_shortener:index' %}">Home</a></li>
-          <li role="presentation" class="{% block analytics_nav %}{% endblock %}"><a href="{% url 'url_shortener:analytics' %}">Analytics</a></li>
+          <li role="presentation" class="nav-item">
+            <a class="nav-link {% block index_nav %}{% endblock %}" href="{% url 'url_shortener:index' %}">Home</a>
+          </li>
+          <li role="presentation" class="nav-item">
+            <a class="nav-link {% block analytics_nav %}{% endblock %}" href="{% url 'url_shortener:analytics' %}">Analytics</a>
+          </li>
           
           {% block navextra %}{% endblock %}
 
           {% if user.is_authenticated %}
-          <li role="presentation" class="{% block logout_nav %}{% endblock %}"><a href="{% url 'accounts:logout' %}">Logout</a></li>
+          <li role="presentation" class="nav-item">
+            <a class="nav-link" href="{% url 'accounts:logout' %}">Logout</a>
+          </li>
           {% else %}
-          <li role="presentation" class="{% block register_nav %}{% endblock %}"><a href="{% url 'accounts:register' %}">Register</a></li>
-          <li role="presentation" class="{% block login_nav %}{% endblock %}"><a href="{% url 'accounts:login' %}">Login</a></li>
+          <li role="presentation" class="nav-item">
+            <a class="nav-link {% block register_nav %}{% endblock %}" href="{% url 'accounts:register' %}">Register</a>
+          </li>
+          <li role="presentation" class="nav-item">
+            <a class="nav-link {% block login_nav %}{% endblock %}" href="{% url 'accounts:login' %}">Login</a>
+          </li>
           {% endif %}
           
         </ul>

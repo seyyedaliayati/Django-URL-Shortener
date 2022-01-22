@@ -53,6 +53,8 @@ class Link(models.Model):
     def get_clicks(self):
         clicks = Click.objects.filter(link=self)
         clicks = clicks.aggregate(total_clicks=models.Sum('clicks_count'), unique_users=models.Count('ip_address'))
+        if clicks['total_clicks'] is None:
+            clicks['total_clicks'] = 0
         return clicks
 
 class Click(models.Model):
