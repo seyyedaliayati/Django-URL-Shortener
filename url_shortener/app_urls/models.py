@@ -26,6 +26,9 @@ class Link(models.Model):
     def __str__(self):
         return f"{self.alias} -> {self.url}"
     
+    class Meta:
+        ordering = ('-date_created', )
+    
     def get_long_url_truncated(self, max_length=30, remove_schema=True):
         truncated_url = self.url
         if remove_schema:

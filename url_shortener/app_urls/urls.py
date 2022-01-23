@@ -9,5 +9,5 @@ urlpatterns = [
     re_path(r'^(?P<alias>[a-zA-Z0-9-_]+)(?P<extra>/.*)$', views.LinkRedirectView.as_view(), name='alias'),
     re_path(r'^(?P<alias>[a-zA-Z0-9-_]+)\+delete$', views.delete_link, name='delete_link'),
     re_path(r'^(?P<alias>[a-zA-Z0-9-_]+)\+$', views.LinkPreview.as_view(), name='preview'),
-    re_path(r'^~analytics/$', views.analytics, name='analytics'),
+    re_path(r'^~analytics/$', views.AnalyticsView.as_view(), name='analytics'),
 ]

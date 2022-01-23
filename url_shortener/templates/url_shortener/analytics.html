@@ -32,30 +32,30 @@
     {% endfor %}
     </tbody>
   </table>
-  <nav>
-    <ul class="pagination">
-      {# Left #}
-      <li{% if page == 1 %} class="disabled"{% endif %}>
-        <a{% if page != 1 %} href='?page={{ page|add:"-1" }}'{% endif %} aria-label="Previous">
-          <span aria-hidden="true">&laquo;</span>
-        </a>
-      </li>
-
-      {# The list item #}
-      {% for i in count_pages %}
-        <li{% if forloop.counter == page %} class="active"{% endif %}>
-          <a href="?page={{ forloop.counter }}">{{ forloop.counter }}</a>
-        </li>
-      {% endfor %}
-
-      {# Right #}
-      <li{% if page == max_pages %} class="disabled"{% endif %}>
-        <a{% if page != max_pages %} href='?page={{ page|add:"1" }}'{% endif %} aria-label="Next">
-          <span aria-hidden="true">&raquo;</span>
-        </a>
-      </li>
-    </ul>
-  </nav>
+  
+  {% if is_paginated %}
+      <nav>
+        <ul class="pagination">
+          {% if page_obj.has_previous %}
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">&laquo;</a></li>
+          {% else %}
+            <li class="disabled page-item"><span class="page-link">&laquo;</span></li>
+          {% endif %}
+          {% for i in paginator.page_range %}
+            {% if page_obj.number == i %}
+              <li class="page-item active"><span class="page-link">{{ i }} <span class="sr-only">(current)</span></span></li>
+            {% else %}
+              <li class="page-item"><a class="page-link" href="?page={{ i }}">{{ i }}</a></li>
+            {% endif %}
+          {% endfor %}
+          {% if page_obj.has_next %}
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">&raquo;</a></li>
+          {% else %}
+            <li class="disabled page-item"><span class="page-link">&raquo;</span></li>
+          {% endif %}
+        </ul>
+      </nav>
+  {% endif %}
 {% else %}
   <h1>No short URLs exist yet.</h1>
   <p>Zero URLs have been shortened as of now.</p>
