@@ -1,10 +1,10 @@
-from django.urls import reverse
+from django.urls import reverse, reverse_lazy
 from django.shortcuts import get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import (HttpResponseRedirect,
                          HttpResponseForbidden,)
-from django.views.generic.edit import FormView
+from django.views.generic.edit import FormView, DeleteView
 from django.views.generic.detail import DetailView
 from django.views.generic.list import ListView
 from django.views.generic.base import RedirectView
@@ -64,16 +64,16 @@ class LinkPreview(LoginRequiredMixin, DetailView):
         return context
 
 
-@login_required
-def delete_link(request, alias):
-    link = get_object_or_404(Link, alias__iexact=alias)
-    if link.user != request.user:
-        return HttpResponseForbidden()
-    link.delete()
-    messages.add_message(request, messages.INFO, f"Short URL {alias} deleted.")
-    return HttpResponseRedirect(reverse('url_shortener:index'))
+class DeleteLinkView(LoginRequiredMixin, DeleteView):
+    model = Link
+    slug_url_kwarg = 'alias'
+    slug_field = 'alias__iexact'
+    template_name = "url_shortener/link_confirm_delete.html"
+    success_url = reverse_lazy("url_shortener:analytics")
 
-# Move this method
+    def get_queryset(self):
+        return Link.objects.filter(user=self.request.user)
+
 
 class LinkRedirectView(RedirectView):
     permanent = False
@@ -84,6 +84,7 @@ class LinkRedirectView(RedirectView):
         link = get_object_or_404(Link, alias__iexact=alias)
         process_new_click(self.request, link)
         return link.url + extra
+
 
 class AnalyticsView(LoginRequiredMixin, ListView):
     model = Link
