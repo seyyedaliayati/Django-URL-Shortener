@@ -5,9 +5,10 @@ from django.contrib.auth.decorators import login_required
 from django.http import (HttpResponseRedirect,
                          HttpResponseForbidden,
                          Http404,
-                         HttpResponsePermanentRedirect, request)
+                         HttpResponsePermanentRedirect)
 from django.views.generic.edit import FormView
 from django.views.generic.detail import DetailView
+from django.views.generic.base import RedirectView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.utils.timezone import datetime
 
@@ -96,11 +97,15 @@ def process_new_click(request, link):
     click.save()
     return click
 
+class LinkRedirectView(RedirectView):
+    permanent = False
 
-def redirect(request, alias, extra=''):
-    link = get_object_or_404(Link, alias__iexact=alias)
-    process_new_click(request, link)
-    return HttpResponsePermanentRedirect(link.url + extra)
+    def get_redirect_url(self, *args, **kwargs):
+        alias = kwargs.get('alias', '')
+        extra = kwargs.get('extra', '')
+        link = get_object_or_404(Link, alias__iexact=alias)
+        process_new_click(self.request, link)
+        return link.url + extra
 
 
 @login_required
