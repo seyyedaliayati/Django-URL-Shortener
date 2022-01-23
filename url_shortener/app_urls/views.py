@@ -2,7 +2,7 @@ from django.urls import reverse, reverse_lazy
 from django.shortcuts import get_object_or_404
 from django.contrib import messages
 from django.http import HttpResponseRedirect
-from django.views.generic.edit import FormView, DeleteView
+from django.views.generic.edit import FormView, DeleteView, UpdateView
 from django.views.generic.detail import DetailView
 from django.views.generic.list import ListView
 from django.views.generic.base import RedirectView
@@ -60,6 +60,18 @@ class LinkPreview(LoginRequiredMixin, DetailView):
             'url': obj.url,
         })
         return context
+
+
+class LinkUpdateView(LoginRequiredMixin, UpdateView):
+    model = Link
+    fields = ['url']
+    slug_url_kwarg = 'alias'
+    slug_field = 'alias__iexact'
+    template_name_suffix = '_update_form'
+    success_url = reverse_lazy('app_urls:analytics')
+
+    def get_queryset(self):
+        return Link.objects.filter(user=self.request.user)
 
 
 class DeleteLinkView(LoginRequiredMixin, DeleteView):

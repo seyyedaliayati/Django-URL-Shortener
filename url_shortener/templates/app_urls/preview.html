@@ -18,7 +18,7 @@
 <div class="btn-toolbar mt-2" role="toolbar" aria-label="buttons-toolbar">
   <a class="btn btn-primary" href="{{ url }}">Proceed to this site</a>
   <a class="btn btn-success ml-1" href="{% url 'app_urls:index' %}">Shorten another URL</a>
-  <a class="btn btn-warning ml-1" href="#">Edit URL</a>
+  <a class="btn btn-warning ml-1" href="{% url 'app_urls:update' alias=alias %}">Edit URL</a>
   <a class="btn btn-danger ml-1" href="{% url 'app_urls:delete' alias=alias %}">Delete</a>
 </div>
 <hr>
