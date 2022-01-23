@@ -1,7 +1,9 @@
 from django.urls import reverse, reverse_lazy
 from django.shortcuts import get_object_or_404
 from django.contrib import messages
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, JsonResponse
+from django.utils.timezone import datetime, timedelta
+from django.views import View
 from django.views.generic.edit import FormView, DeleteView, UpdateView
 from django.views.generic.detail import DetailView
 from django.views.generic.list import ListView
@@ -12,7 +14,7 @@ from .misc import (hash_encode,
                    get_absolute_short_url,
                    process_new_click)
 from .forms import URLShortenerForm
-from .models import Link
+from .models import Click, Link
 
 
 class NewLinkView(LoginRequiredMixin, FormView):
@@ -103,3 +105,33 @@ class AnalyticsView(LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         return Link.objects.filter(user=self.request.user)
+
+
+class ChartDataView(LoginRequiredMixin, View):
+    def get(self, request, *args, **kwargs):
+        alias = kwargs.get('alias', '')
+        link = get_object_or_404(Link, alias__iexact=alias)
+        if link.user != request.user:
+            return JsonResponse(
+                data={"error": "Permission denied."},
+                status=403
+            )
+        today = datetime.today()
+        start_date = request.GET.get('start')
+        end_date = request.GET.get('end')
+        if not start_date:
+            start_date = today - timedelta(days=7)
+        if not end_date:
+            end_date = today
+        clicks = Click.objects.filter(link=link, clicked_date__range=[start_date, end_date])
+        chart_data = {}
+        for click in clicks.iterator():
+            str_date = str(click.clicked_date)
+            if str_date in chart_data:
+                chart_data[str_date] += click.clicks_count
+            else:
+                chart_data[str_date] = click.clicks_count
+        return JsonResponse(data={
+            'labels': list(chart_data.keys()),
+            'data': list(chart_data.values())
+        })

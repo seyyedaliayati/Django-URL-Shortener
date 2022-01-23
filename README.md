@@ -13,3 +13,7 @@ Click:
 ## Used Techniques
 - Class Based Views
 - Pagination
+
+## Used Third-Party Libraries
+- hashids
+- django-bootstrap4

@@ -9,4 +9,4 @@ class LinkAdmin(admin.ModelAdmin):
 
 @admin.register(Click)
 class ClickAdmin(admin.ModelAdmin):
-    list_display = ('link', 'ip_address', 'clicks_count')
+    list_display = ('link', 'ip_address', 'clicks_count', 'clicked_date', )
