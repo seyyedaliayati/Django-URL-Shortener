@@ -47,6 +47,16 @@
       </div>
     </div>
     <div class="container">
+      {% if messages %}
+      {% for message in messages %}
+        <div class="alert alert-info" role="info">
+          <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+          <span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
+          <span class="sr-only">Information</span>
+          {{ message }}
+        </div>
+      {% endfor %}
+    {% endif %}
       {% block content %}{% endblock %}
     </div>
     <div id="push"></div>

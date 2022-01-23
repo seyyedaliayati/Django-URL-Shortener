@@ -57,6 +57,15 @@ def preview(request, alias):
         'url': link.url,
     })
 
+@login_required
+def delete_link(request, alias):
+    link = get_object_or_404(Link, alias__iexact=alias)
+    if link.user != request.user:
+        return HttpResponseForbidden()
+    link.delete()
+    messages.add_message(request, messages.INFO, f"Short URL {alias} deleted.")
+    return HttpResponseRedirect(reverse('url_shortener:index'))
+
 # Move this method
 def get_client_ip(request):
     x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
