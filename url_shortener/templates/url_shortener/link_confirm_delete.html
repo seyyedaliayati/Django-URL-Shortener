@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% load bootstrap4 %}
+
+{% block title %}Confirm Delete{% endblock title %}
+
+{% block content %}
+<form method="post">
+    {% csrf_token %}
+    <p>Are you sure you want to delete "{{ object }}"?</p>
+    <p><b>There is no undo for this process!</b></p>
+    {% bootstrap_form form %}
+    {% buttons %}
+    <button type="submit" class="btn btn-danger">
+        Confirm
+    </button>
+    {% endbuttons %}
+</form>
+{% endblock content %}
