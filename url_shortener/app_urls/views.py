@@ -1,21 +1,20 @@
 from django.urls import reverse
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import (HttpResponseRedirect,
-                         HttpResponseForbidden,
-                         Http404)
+                         HttpResponseForbidden,)
 from django.views.generic.edit import FormView
 from django.views.generic.detail import DetailView
 from django.views.generic.list import ListView
 from django.views.generic.base import RedirectView
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.utils.timezone import datetime
 
 from .misc import (hash_encode,
-                   get_absolute_short_url)
+                   get_absolute_short_url,
+                   process_new_click)
 from .forms import URLShortenerForm
-from .models import Click, Link
+from .models import Link
 
 
 class NewLinkView(LoginRequiredMixin, FormView):
@@ -75,27 +74,6 @@ def delete_link(request, alias):
     return HttpResponseRedirect(reverse('url_shortener:index'))
 
 # Move this method
-
-
-def get_client_ip(request):
-    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
-    if x_forwarded_for:
-        ip = x_forwarded_for.split(',')[0]
-    else:
-        ip = request.META.get('REMOTE_ADDR')
-    return ip
-
-
-def process_new_click(request, link):
-    today = datetime.today()
-    click, _ = Click.objects.get_or_create(
-        link=link,
-        clicked_date=today,
-        ip_address=get_client_ip(request)
-    )
-    click.clicks_count += 1
-    click.save()
-    return click
 
 class LinkRedirectView(RedirectView):
     permanent = False
