@@ -59,6 +59,6 @@
 {% else %}
   <h1>No short URLs exist yet.</h1>
   <p>Zero URLs have been shortened as of now.</p>
-  <p><a class="btn btn-primary" href="{% url 'url_shortener:index' %}" role="button">Shorten some URLs!</a></p>
+  <p><a class="btn btn-primary" href="{% url 'app_urls:index' %}" role="button">Shorten some URLs!</a></p>
 {% endif %}
 {% endblock %}

@@ -1,9 +1,7 @@
 from django.urls import reverse, reverse_lazy
 from django.shortcuts import get_object_or_404
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required
-from django.http import (HttpResponseRedirect,
-                         HttpResponseForbidden,)
+from django.http import HttpResponseRedirect
 from django.views.generic.edit import FormView, DeleteView
 from django.views.generic.detail import DetailView
 from django.views.generic.list import ListView
@@ -18,7 +16,7 @@ from .models import Link
 
 
 class NewLinkView(LoginRequiredMixin, FormView):
-    template_name = 'url_shortener/index.html'
+    template_name = 'app_urls/index.html'
     form_class = URLShortenerForm
 
     def form_valid(self, form):
@@ -41,12 +39,12 @@ class NewLinkView(LoginRequiredMixin, FormView):
         except Link.DoesNotExist:
             new_link.alias = alias or hash_encode(1)
         new_link.save()
-        return HttpResponseRedirect(reverse('url_shortener:preview', args=(original_alias or new_link.alias,)))
+        return HttpResponseRedirect(reverse('app_urls:preview', args=(original_alias or new_link.alias,)))
 
 
 class LinkPreview(LoginRequiredMixin, DetailView):
     model = Link
-    template_name = 'url_shortener/preview.html'
+    template_name = 'app_urls/preview.html'
     slug_url_kwarg = 'alias'
     slug_field = 'alias__iexact'
 
@@ -68,8 +66,7 @@ class DeleteLinkView(LoginRequiredMixin, DeleteView):
     model = Link
     slug_url_kwarg = 'alias'
     slug_field = 'alias__iexact'
-    template_name = "url_shortener/link_confirm_delete.html"
-    success_url = reverse_lazy("url_shortener:analytics")
+    success_url = reverse_lazy('app_urls:analytics')
 
     def get_queryset(self):
         return Link.objects.filter(user=self.request.user)
@@ -90,7 +87,7 @@ class AnalyticsView(LoginRequiredMixin, ListView):
     model = Link
     paginate_by = 10
     context_object_name = 'links'
-    template_name = 'url_shortener/analytics.html'
+    template_name = 'app_urls/analytics.html'
 
     def get_queryset(self):
         return Link.objects.filter(user=self.request.user)

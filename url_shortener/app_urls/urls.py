@@ -2,7 +2,7 @@
 from django.urls import re_path
 from . import views
 
-app_name = 'url_shortener'
+app_name = 'app_urls'
 urlpatterns = [
     re_path(r'^$', views.NewLinkView.as_view(), name='index'),
     re_path(r'^(?P<alias>[a-zA-Z0-9-_]+)$', views.LinkRedirectView.as_view(), name='alias'),

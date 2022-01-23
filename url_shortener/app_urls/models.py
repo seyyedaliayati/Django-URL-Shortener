@@ -48,10 +48,10 @@ class Link(models.Model):
         return self.date_created.strftime('%Y %b %d, %I:%M %p')
 
     def get_alias_path(self):
-        return reverse('url_shortener:alias', args=(self.alias,))
+        return reverse('app_urls:alias', args=(self.alias,))
 
     def get_preview_path(self):
-        return reverse('url_shortener:preview', args=(self.alias,))
+        return reverse('app_urls:preview', args=(self.alias,))
     
     def get_clicks(self):
         clicks = Click.objects.filter(link=self)

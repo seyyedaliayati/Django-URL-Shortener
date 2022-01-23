@@ -18,14 +18,14 @@
   <div id="wrapper">
     <div class="jumbotron" id="banner" style="padding-bottom: 0;">
       <div class="container">
-        <h1><a href="{% url 'url_shortener:index' %}">URL Shortener</a></h1>
+        <h1><a href="{% url 'app_urls:index' %}">URL Shortener</a></h1>
         <p>Shorten your long URLs and share them with your friends!</p>
         <ul class="nav nav-tabs" style="border: 0;">
           <li role="presentation" class="nav-item">
-            <a class="nav-link {% block index_nav %}{% endblock %}" href="{% url 'url_shortener:index' %}">Home</a>
+            <a class="nav-link {% block index_nav %}{% endblock %}" href="{% url 'app_urls:index' %}">Home</a>
           </li>
           <li role="presentation" class="nav-item">
-            <a class="nav-link {% block analytics_nav %}{% endblock %}" href="{% url 'url_shortener:analytics' %}">Analytics</a>
+            <a class="nav-link {% block analytics_nav %}{% endblock %}" href="{% url 'app_urls:analytics' %}">Analytics</a>
           </li>
           
           {% block navextra %}{% endblock %}

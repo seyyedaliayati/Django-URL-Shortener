@@ -28,9 +28,9 @@ def get_absolute_short_url(request, alias, remove_schema=True):
     """
     if alias:
         full_url = request.build_absolute_uri(
-            reverse('url_shortener:alias', args=(alias,)))
+            reverse('app_urls:alias', args=(alias,)))
     else:
-        full_url = request.build_absolute_uri(reverse('url_shortener:index'))
+        full_url = request.build_absolute_uri(reverse('app_urls:index'))
     if remove_schema:
         return full_url[len(request.scheme)+3:]
     return full_url
