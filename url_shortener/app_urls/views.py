@@ -5,7 +5,9 @@ from django.contrib.auth.decorators import login_required
 from django.http import (HttpResponseRedirect,
                          HttpResponseForbidden,
                          Http404,
-                         HttpResponsePermanentRedirect)
+                         HttpResponsePermanentRedirect, request)
+from django.views.generic.edit import FormView
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.utils.timezone import datetime
 
 from .misc import (hash_encode,
@@ -13,37 +15,31 @@ from .misc import (hash_encode,
 from .forms import URLShortenerForm
 from .models import Click, Link
 
+class NewLinkView(LoginRequiredMixin, FormView):
+    template_name = 'url_shortener/index.html'
+    form_class = URLShortenerForm
 
-@login_required
-def index(request):
-    if request.method == 'POST':
-        form = URLShortenerForm(request.POST)
-        if form.is_valid():
-            original_alias = form.cleaned_data['alias']
-            alias = original_alias.lower()
-            url = form.cleaned_data['url']
-            new_link = Link(user=request.user, url=url)
-            try:
-                latest_link = Link.objects.latest('id')
-                if Link.objects.filter(alias__exact=alias):
-                    # handle alias conflict
-                    new_link.alias = hash_encode(latest_link.id+1)
-                    messages.add_message(request, messages.INFO,
-                                         'Short URL {} already exists so a new short URL was created.'
-                                         .format(get_absolute_short_url(request, original_alias)))
-                    original_alias = new_link.alias
-                else:
-                    new_link.alias = alias or hash_encode(latest_link.id+1)
-            except Link.DoesNotExist:
-                new_link.alias = alias or hash_encode(1)
-            new_link.save()
-            return HttpResponseRedirect(reverse('url_shortener:preview', args=(original_alias or new_link.alias,)))
-    else:
-        form = URLShortenerForm()
-    return render(request, 'url_shortener/index.html', {
-        'form': form,
-        'absolute_index_url': get_absolute_short_url(request, ''),
-    })
+    def form_valid(self, form):
+        request = self.request
+        original_alias = form.cleaned_data['alias']
+        alias = original_alias.lower()
+        url = form.cleaned_data['url']
+        new_link = Link(user=request.user, url=url)
+        try:
+            latest_link = Link.objects.latest('id')
+            if Link.objects.filter(alias__exact=alias).exists():
+                # handle alias conflict
+                new_link.alias = alias + '-' + hash_encode(latest_link.id+1)
+                messages.add_message(request, messages.INFO,
+                                        'Short URL {} already exists so a new short URL was created.'
+                                        .format(get_absolute_short_url(request, original_alias)))
+                original_alias = new_link.alias
+            else:
+                new_link.alias = alias or hash_encode(latest_link.id+1)
+        except Link.DoesNotExist:
+            new_link.alias = alias or hash_encode(1)
+        new_link.save()
+        return HttpResponseRedirect(reverse('url_shortener:preview', args=(original_alias or new_link.alias,)))
 
 
 @login_required
@@ -88,7 +84,6 @@ def process_new_click(request, link):
 
 def redirect(request, alias, extra=''):
     link = get_object_or_404(Link, alias__iexact=alias)
-    link.save()
     process_new_click(request, link)
     return HttpResponsePermanentRedirect(link.url + extra)
 
