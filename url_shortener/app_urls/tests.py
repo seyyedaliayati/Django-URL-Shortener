@@ -10,8 +10,8 @@ URL = 'https://www.google.com/'
 
 class TestRedirect(TestCase):
     def setUp(self) -> None:
-        self.user = User.objects.create(username='user')
-        self.user2 = User.objects.create(username='user2')
+        self.user = User.objects.create(email='user@gmail.com')
+        self.user2 = User.objects.create(email='user2@gmail.com')
         
         self.authenticated_client = Client()
         self.authenticated_client.force_login(user=self.user)
@@ -39,11 +39,11 @@ class TestRedirect(TestCase):
         # Anonymous User
         valid_url = reverse('app_urls:alias', args=('valid',))
         response = self.client.get(valid_url)
-        self.assertRedirects(response, URL, status_code=301, target_status_code=302)
+        self.assertRedirects(response, URL, status_code=302, target_status_code=302)
         
         # Authenticated User
         response = self.authenticated_client.get(valid_url)
-        self.assertRedirects(response, URL, status_code=301)
+        self.assertRedirects(response, URL, status_code=302)
         
         # link.refresh_from_db()
         # self.assertEqual(link.clicks_count, 1)
@@ -61,11 +61,11 @@ class TestRedirect(TestCase):
         for url in urls:
             # Anonymous User
             response = self.client.get(url)
-            self.assertRedirects(response, URL, status_code=301, target_status_code=302)
+            self.assertRedirects(response, URL, status_code=302, target_status_code=302)
 
             # Authenticated User
             response = self.authenticated_client.get(url)
-            self.assertRedirects(response, URL, status_code=301)
+            self.assertRedirects(response, URL, status_code=302)
 
         # link.refresh_from_db()
         # self.assertEqual(link.clicks_count, len(urls))
@@ -97,7 +97,7 @@ class TestRedirect(TestCase):
         c = Client()
         c.force_login(self.user2)
         response = c.get(url)
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 404)
 
         # Authenticated and owner User
         response = self.authenticated_client.get(url)
@@ -121,8 +121,8 @@ class TestIndexView(TestCase):
     maxDiff = None
 
     def setUp(self) -> None:
-        self.user = User.objects.create(username='user')
-        self.user2 = User.objects.create(username='user2')
+        self.user = User.objects.create(email='user@gmail.com')
+        self.user2 = User.objects.create(email='user2@gmail.com')
         
         self.authenticated_client = Client()
         self.authenticated_client.force_login(user=self.user)
@@ -198,7 +198,7 @@ class TestIndexView(TestCase):
             'url': URL,
             'alias': link1.alias,  # Uh oh, conflicts with the first link
         }, follow=True)
-        self.assert_link_created(response, hash_encode(link2.id + 1))
+        self.assert_link_created(response, link1.alias + "-" + hash_encode(link2.id + 1))
         self.assertContains(response, link1.alias)
         self.assertContains(response, 'exists')
 
@@ -208,7 +208,6 @@ class TestIndexView(TestCase):
         return an appropriate error message.
         """
         response = self.authenticated_client.post(reverse('app_urls:index'), {}, follow=True)
-        self.assertContains(response, 'Error')
         self.assertContains(response, 'field is required')
         self.assertTemplateUsed('app_urls/index.html')
 
@@ -220,7 +219,6 @@ class TestIndexView(TestCase):
         response = self.authenticated_client.post(reverse('app_urls:index'), {
             'alias': 'valid_alias',
         })
-        self.assertContains(response, 'Error')
         self.assertContains(response, 'field is required')
         self.assertTemplateUsed('app_urls/index.html')
 
@@ -232,7 +230,6 @@ class TestIndexView(TestCase):
         response = self.authenticated_client.post(reverse('app_urls:index'), {
             'alias': '/invalid/alias',
         })
-        self.assertContains(response, 'Error')
         self.assertContains(response, 'field is required')
         self.assertContains(response, 'hyphen')
         self.assertContains(response, 'underscore')
@@ -247,7 +244,6 @@ class TestIndexView(TestCase):
             'url': URL,
             'alias': '/this/is/an/invalid/alias',
         })
-        self.assertContains(response, 'Error')
         self.assertContains(response, 'hyphen')
         self.assertContains(response, 'underscore')
         self.assertTemplateUsed('app_urls/index.html')
@@ -278,7 +274,6 @@ class TestIndexView(TestCase):
         response = self.authenticated_client.post(reverse('app_urls:index'), {
             'url': '/this/is/an/invalid/url',
         })
-        self.assertContains(response, 'Error')
         self.assertContains(response, 'Enter a valid URL')
         self.assertTemplateUsed('app_urls/index.html')
 
@@ -290,9 +285,9 @@ class TestIndexView(TestCase):
         response = self.authenticated_client.post(reverse('app_urls:index'), {
             'url': URL + '?' + ''.join([str(c) for c in range(3000)]),
         })
-        self.assertContains(response, 'Error')
-        self.assertContains(response, 'length')
-        self.assertContains(response, '2083')
+        self.assertContains(response, 'Ensure')
+        self.assertContains(response, 'characters')
+        self.assertContains(response, '2048')
         self.assertTemplateUsed('app_urls/index.html')
 
     def test_index_with_alias_too_long(self):
@@ -304,8 +299,7 @@ class TestIndexView(TestCase):
             'url': URL,
             'alias': ''.join([hash_encode(i) for i in range(300)]),
         })
-        self.assertContains(response, 'Error')
-        self.assertContains(response, 'length')
+        self.assertContains(response, 'characters')
         self.assertContains(response, '255')
         self.assertTemplateUsed('app_urls/index.html')
     
