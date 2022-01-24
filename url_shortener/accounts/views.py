@@ -15,8 +15,9 @@ class CustomLoginView(LoginView):
 class CustomLogoutView(LogoutView):
     pass
 
+
 class RegisterView(SuccessMessageMixin, CreateView):
-  template_name = 'accounts/register.html'
-  success_url = reverse_lazy('accounts:login')
-  form_class = UserRegisterForm
-  success_message = _("Your account was created successfully")
+    template_name = 'accounts/register.html'
+    success_url = reverse_lazy('accounts:login')
+    form_class = UserRegisterForm
+    success_message = _("Your account was created successfully")

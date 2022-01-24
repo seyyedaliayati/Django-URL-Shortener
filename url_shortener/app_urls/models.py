@@ -10,7 +10,7 @@ from django.utils.translation import gettext_lazy as _
 
 User = get_user_model()
 
-    
+
 class Link(models.Model):
     user = models.ForeignKey(to=User, on_delete=models.CASCADE)
     url = models.URLField(max_length=2048)
@@ -25,16 +25,16 @@ class Link(models.Model):
 
     def __str__(self):
         return f"{self.alias} -> {self.url}"
-    
+
     class Meta:
         ordering = ('-date_created', )
-    
+
     def get_long_url_truncated(self, max_length=30, remove_schema=True):
         truncated_url = self.url
         if remove_schema:
             parsed_url = urlparse(truncated_url)
             scheme = parsed_url.scheme
-            truncated_url = truncated_url[len(scheme)+3:]
+            truncated_url = truncated_url[len(scheme) + 3:]
             if parsed_url.path == '/' and not parsed_url.fragment and not parsed_url.query:
                 truncated_url = truncated_url[:-1]
         if len(truncated_url) > max_length:
@@ -52,13 +52,15 @@ class Link(models.Model):
 
     def get_preview_path(self):
         return reverse('app_urls:preview', args=(self.alias,))
-    
+
     def get_clicks(self):
         clicks = Click.objects.filter(link=self)
-        clicks = clicks.aggregate(total_clicks=models.Sum('clicks_count'), unique_users=models.Count('ip_address'))
+        clicks = clicks.aggregate(total_clicks=models.Sum(
+            'clicks_count'), unique_users=models.Count('ip_address'))
         if clicks['total_clicks'] is None:
             clicks['total_clicks'] = 0
         return clicks
+
 
 class Click(models.Model):
     link = models.ForeignKey(to=Link, on_delete=models.CASCADE)
@@ -68,5 +70,3 @@ class Click(models.Model):
 
     def __str__(self):
         return f"{self.link.alias}: {self.clicks_count}"
-
-

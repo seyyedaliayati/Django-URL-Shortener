@@ -4,6 +4,7 @@ from django.core.management.base import BaseCommand
 
 from app_urls.models import Click, Link, User
 
+
 class Command(BaseCommand):
     help = "Fills database with fake data."
 
@@ -25,7 +26,8 @@ class Command(BaseCommand):
                     link=link,
                     ip_address=f"{random.randint(0, 255)}.{random.randint(0, 255)}.{random.randint(0, 255)}.{random.randint(0, 255)}"
                 )
-                click.clicked_date = today - timedelta(days=random.randint(0, 30))
+                click.clicked_date = today - \
+                    timedelta(days=random.randint(0, 30))
                 click.clicks_count += random.randint(1, 10)
                 click.save()
                 self.stdout.write("----  " + str(click))

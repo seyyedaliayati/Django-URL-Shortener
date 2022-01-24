@@ -31,13 +31,13 @@ class NewLinkView(LoginRequiredMixin, FormView):
             latest_link = Link.objects.latest('id')
             if Link.objects.filter(alias__exact=alias).exists():
                 # handle alias conflict
-                new_link.alias = alias + '-' + hash_encode(latest_link.id+1)
+                new_link.alias = alias + '-' + hash_encode(latest_link.id + 1)
                 messages.add_message(request, messages.INFO,
                                      'Short URL {} already exists so a new short URL was created.'
                                      .format(get_absolute_short_url(request, original_alias)))
                 original_alias = new_link.alias
             else:
-                new_link.alias = alias or hash_encode(latest_link.id+1)
+                new_link.alias = alias or hash_encode(latest_link.id + 1)
         except Link.DoesNotExist:
             new_link.alias = alias or hash_encode(1)
         new_link.save()

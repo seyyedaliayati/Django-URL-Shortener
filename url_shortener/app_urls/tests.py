@@ -12,7 +12,7 @@ class TestRedirect(TestCase):
     def setUp(self) -> None:
         self.user = User.objects.create(email='user@gmail.com')
         self.user2 = User.objects.create(email='user2@gmail.com')
-        
+
         self.authenticated_client = Client()
         self.authenticated_client.force_login(user=self.user)
         return super().setUp()
@@ -22,29 +22,32 @@ class TestRedirect(TestCase):
         Redirect URL with invalid alias should return 404 for all users.
         """
         # Anonymous User
-        response = self.client.get(reverse('app_urls:alias', args=('invalid',)))
+        response = self.client.get(
+            reverse('app_urls:alias', args=('invalid',)))
         self.assertEqual(response.status_code, 404)
-        
+
         # Authenticated User
-        response = self.authenticated_client.get(reverse('app_urls:alias', args=('invalid',)))
+        response = self.authenticated_client.get(
+            reverse('app_urls:alias', args=('invalid',)))
         self.assertEqual(response.status_code, 404)
 
     def test_redirect_with_valid_alias(self):
         """
-        Redirect URL with valid alias should redirect to appropriate URL 
+        Redirect URL with valid alias should redirect to appropriate URL
         with 301 response for all users.
         """
-        link = Link.objects.create(user=self.user, url=URL, alias='valid')
-        
+        Link.objects.create(user=self.user, url=URL, alias='valid')
+
         # Anonymous User
         valid_url = reverse('app_urls:alias', args=('valid',))
         response = self.client.get(valid_url)
-        self.assertRedirects(response, URL, status_code=302, target_status_code=302)
-        
+        self.assertRedirects(response, URL, status_code=302,
+                             target_status_code=302)
+
         # Authenticated User
         response = self.authenticated_client.get(valid_url)
         self.assertRedirects(response, URL, status_code=302)
-        
+
         # link.refresh_from_db()
         # self.assertEqual(link.clicks_count, 1)
 
@@ -61,7 +64,8 @@ class TestRedirect(TestCase):
         for url in urls:
             # Anonymous User
             response = self.client.get(url)
-            self.assertRedirects(response, URL, status_code=302, target_status_code=302)
+            self.assertRedirects(
+                response, URL, status_code=302, target_status_code=302)
 
             # Authenticated User
             response = self.authenticated_client.get(url)
@@ -77,9 +81,10 @@ class TestRedirect(TestCase):
         # Anonymous User
         response = self.client.get(reverse('app_urls:alias', args=('blah',)))
         self.assertEqual(response.status_code, 404)
-        
+
         # Authenticated User
-        response = self.authenticated_client.get(reverse('app_urls:alias', args=('blah',)))
+        response = self.authenticated_client.get(
+            reverse('app_urls:alias', args=('blah',)))
         self.assertEqual(response.status_code, 404)
 
     def test_redirect_preview_with_valid_alias(self):
@@ -123,7 +128,7 @@ class TestIndexView(TestCase):
     def setUp(self) -> None:
         self.user = User.objects.create(email='user@gmail.com')
         self.user2 = User.objects.create(email='user2@gmail.com')
-        
+
         self.authenticated_client = Client()
         self.authenticated_client.force_login(user=self.user)
         return super().setUp()
@@ -133,7 +138,8 @@ class TestIndexView(TestCase):
         Helper function to check assert that a link was created successfully,
         given the `response` and the expected `alias`
         """
-        self.assertRedirects(response, reverse('app_urls:preview', args=(alias,)))
+        self.assertRedirects(response, reverse(
+            'app_urls:preview', args=(alias,)))
         self.assertTemplateUsed(response, 'app_urls/preview.html')
         link = Link.objects.latest('id')
         self.assertEqual(link.url, URL)
@@ -198,7 +204,8 @@ class TestIndexView(TestCase):
             'url': URL,
             'alias': link1.alias,  # Uh oh, conflicts with the first link
         }, follow=True)
-        self.assert_link_created(response, link1.alias + "-" + hash_encode(link2.id + 1))
+        self.assert_link_created(
+            response, link1.alias + "-" + hash_encode(link2.id + 1))
         self.assertContains(response, link1.alias)
         self.assertContains(response, 'exists')
 
@@ -207,7 +214,8 @@ class TestIndexView(TestCase):
         Index page when POSTed with no URL and no alias, should
         return an appropriate error message.
         """
-        response = self.authenticated_client.post(reverse('app_urls:index'), {}, follow=True)
+        response = self.authenticated_client.post(
+            reverse('app_urls:index'), {}, follow=True)
         self.assertContains(response, 'field is required')
         self.assertTemplateUsed('app_urls/index.html')
 
@@ -302,7 +310,7 @@ class TestIndexView(TestCase):
         self.assertContains(response, 'characters')
         self.assertContains(response, '255')
         self.assertTemplateUsed('app_urls/index.html')
-    
+
     def test_index_not_authenticated(self):
         """
         Index page required authentication because only authenticated users can create short links.
@@ -322,7 +330,8 @@ class TestURLShortenerFormValidation(TestCase):
 
     def test_alias_validation(self):
 
-        VALID_ALIASES = ('there-you-go', 'this_is_okay', '42', '63as', 'alex42thegreat', 'R2-D2', 'E_D12')
+        VALID_ALIASES = ('there-you-go', 'this_is_okay', '42',
+                         '63as', 'alex42thegreat', 'R2-D2', 'E_D12')
         INVALID_ALIASES = ('stop$', '@asd', '#jgkl', '+hbwler', 'learn&grow', 'easy_peasy/', '/bye', ':huh', '(nope)',
                            '^acute', 'perc%tile', 'a*terisk', '<tag', 'you>', "'cause", '"possible"', '\\back', '=eq',
                            '|pipe', 'an{', 'fg}d', 'back`t', 'til~e', 'polls:index')

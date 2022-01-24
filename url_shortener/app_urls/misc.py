@@ -32,8 +32,9 @@ def get_absolute_short_url(request, alias, remove_schema=True):
     else:
         full_url = request.build_absolute_uri(reverse('app_urls:index'))
     if remove_schema:
-        return full_url[len(request.scheme)+3:]
+        return full_url[len(request.scheme) + 3:]
     return full_url
+
 
 def get_client_ip(request):
     """
