@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.0/ref/settings/
 """
 
+from email.policy import default
 from os import environ
 from pathlib import Path
 
@@ -27,7 +28,7 @@ SECRET_KEY = environ.get("SECRET_KEY", default="fowh932y482h")
 DEBUG = int(environ.get("DEBUG", default=0))
 
 ALLOWED_HOSTS = environ.get("DJANGO_ALLOWED_HOSTS", default="*").split(" ")
-
+CSRF_TRUSTED_ORIGINS = environ.get("CSRF_TRUSTED_ORIGINS", default="*").split(" ")
 
 # Application definition
 
