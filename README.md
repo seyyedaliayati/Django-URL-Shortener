@@ -90,6 +90,14 @@ After executing this command and admin user will created for you:
 - **Email:** admin@admin.com
 - **Password:** admin
 
+## Future Works
+- Add user email verification.
+- Protect login with reCaptcha.
+- Support other languages.
+- Add caching (redis).
+- Load tests.
+- More unit tests.
+
 # Thanks for your attention!
 Feel free to create issues, pull requests or even contact me (seyyedaliayati@gmail.com)!
 
