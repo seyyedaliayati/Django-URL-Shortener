@@ -1,0 +1,154 @@
+{% extends 'base.html' %}
+
+{% block title %}Preview - {{ title }}{% endblock %}
+
+{% block headextra %}
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.min.css" integrity="sha512-mSYUmp1HYZDFaVKK//63EcZq4iFWFjxSL+Z3T/aCt4IO9Cejm03q3NKKYN6pFQzY0SBOr8h+eCIAZHPXcpZaNw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+{% endblock headextra %}
+
+{% block navextra %}
+<li role="presentation" class="nav-item"><a class="nav-link active" href="{{ request.get_full_path }}">Preview</a></li>
+{% endblock %}
+
+{% block content %}
+
+<p><input type="text" id="shortened-url" readonly class="form-control input-lg" value="{{ absolute_short_url }}" /></p>
+<p>This short URL redirects to:</p>
+<div id="url" class="lead">{{ url }}</div>
+<div class="btn-toolbar mt-2" role="toolbar" aria-label="buttons-toolbar">
+  <a class="btn btn-primary" href="{{ url }}">Proceed to this site</a>
+  <a class="btn btn-success ml-1" href="{% url 'app_urls:index' %}">Shorten another URL</a>
+  <a class="btn btn-warning ml-1" href="{% url 'app_urls:update' alias=alias %}">Edit URL</a>
+  <a class="btn btn-danger ml-1" href="{% url 'app_urls:delete' alias=alias %}">Delete</a>
+</div>
+<hr>
+<div class="mt-2">
+  <form class="form-inline" method="get" onsubmit="return updateChart();">
+    <div class="form-group mb-2">
+      <label for="startDate">Start Date: </label>
+      <input type="text" name="start_date" class="form-control datepicker" id="startDate" placeholder="Click to select date.">
+    </div>
+    <div class="form-group mx-sm-3 mb-2">
+      <label for="endDate">Stop Date: </label>
+      <input type="text" name="end_date" class="form-control datepicker" id="endDate" placeholder="Click to select date.">
+    </div>
+    <button type="submit" class="btn btn-primary mb-2">Update Chart</button>
+  </form>
+</div>
+
+<div class="chartContainer">
+  <canvas id="myChart"></canvas>
+</div>
+{% endblock %}
+
+{% block bodyextra %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js" integrity="sha512-T/tUfKSV1bihCnd+MxKD0Hm1uBBroVYBOYSk1knyvQ9VyZJpc/ALb4P0r6ubwVPSGB2GvjeoMAJJImBG12TiaQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@^3"></script>
+<script src="https://cdn.jsdelivr.net/npm/moment@^2"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-moment@^1"></script>
+<script>
+  $('.datepicker').datepicker({
+    format: 'yyyy-mm-dd',
+    todayHighlight: true,
+    autoClose: true,
+  });
+
+  $('#shortened-url').focus().select().click(function() {
+    $(this).select();
+  });
+
+  // Setup Bar Chart
+  function httpGetAsync(theUrl, callback)
+  {
+      var xmlHttp = new XMLHttpRequest();
+      xmlHttp.onreadystatechange = function() { 
+          if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
+              callback(xmlHttp.responseText);
+      }
+      xmlHttp.open("GET", theUrl, true); // true for asynchronous 
+      xmlHttp.send(null);
+  }
+
+  let chartLabels;
+  let chartData;
+  let chartDataFull;
+  let chartConfig;
+  const chartCtx = $('#myChart');
+  let myChart;
+  let firstLoad = true;
+
+  function createChart(){
+    chartDataFull = {
+      labels: chartLabels,
+      datasets: [{
+        label: "Click Counts",
+        data: chartData,
+        backgroundColor: [
+          'rgba(54, 162, 235, 0.2)',
+        ],
+        borderColor: [
+        'rgb(54, 162, 235)',
+        ],
+        borderWidth: 1
+      }]
+    }
+    chartConfig = {
+      type: 'bar',
+      data: chartDataFull,
+      options: {
+        responsive: true,
+        scales: {
+          y: {
+            beginAtZero: true,
+            title: {
+              display: true,
+              text: '# of clicks'
+            }
+          },
+          x: {
+            type: 'time',
+            display: true,
+            title: {
+              display: true,
+              text: 'Date'
+            },
+            time: {
+              unit: 'day',
+              round: 'day'
+            }
+          }
+        }
+      },
+    };
+    myChart = new Chart(chartCtx, chartConfig);
+  }
+
+  function dataIsReady(response,){
+    data = JSON.parse(response);
+    chartData = data.data;
+    chartLabels = data.labels;
+    chartLabels = chartLabels.map(date => new Date(date));
+
+    if (firstLoad){
+      console.log("Chart Created!")
+      createChart();
+      firstLoad = false;
+    } else {
+      console.log("Chart updated!")
+      myChart.data.labels = chartLabels;
+      myChart.data.datasets[0].data = chartData;
+      myChart.update();
+    }
+  }
+
+  function updateChart(){
+    start = $("#startDate").val();
+    end = $("#endDate").val();
+    httpGetAsync("{% url 'app_urls:chart_data' alias=alias %}?start="+start+"&end="+end, dataIsReady);
+    return false;
+  }
+
+  updateChart();
+
+</script>
+{% endblock %}

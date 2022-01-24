@@ -1,0 +1,29 @@
+.table thead > tr > td {
+    font-weight: bold;
+  }
+  html, body {
+    height: 100%;
+  }
+  #wrapper {
+    min-height: 100%;
+    height: auto !important;
+    height: 100%;
+    margin: 0 auto -60px;
+  }
+  #push, #footer {
+    height: 60px;
+  }
+  #footer {
+    background-color: #f5f5f5;
+    margin-top: -50px;
+  }
+  .credit {
+    margin: 20px 0;
+    color: #999;
+  }
+
+  .chartContainer {
+    width: 80%;
+    margin: 5px auto;
+  }
+  

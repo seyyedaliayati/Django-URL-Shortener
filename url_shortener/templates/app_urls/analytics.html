@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+
+{% block title %}Analytics - {{ title }}{% endblock %}
+
+{% block analytics_nav %}active{% endblock %}
+
+{% block local_nav %}
+{% endblock %}
+
+{% block content %}
+{% if links %}
+  <p>All short URLs and their click analytics is publicly available. Time is in UTC format.</p>
+  <table class="table table-hover">
+    <thead>
+      <tr>
+        <td>Short URL</td>
+        <td>Long URL</td>
+        <td>Total Clicks</td>
+        <td>Unique Users (IPs)</td>
+        <td>Created</td>
+      </tr>
+    </thead>
+    <tbody>
+    {% for link in links %}
+      <tr>
+        <td><a href="{{ link.get_preview_path }}">{{ link.alias }}</a></td>
+        <td><a href="{{ link.url }}">{{ link.get_long_url_truncated }}</a></td>
+        <td>{{ link.get_clicks.total_clicks }}</td>
+        <td>{{ link.get_clicks.unique_users }}</td>
+        <td>{{ link.get_date_created_human_friendly }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  
+  {% if is_paginated %}
+      <nav>
+        <ul class="pagination">
+          {% if page_obj.has_previous %}
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">&laquo;</a></li>
+          {% else %}
+            <li class="disabled page-item"><span class="page-link">&laquo;</span></li>
+          {% endif %}
+          {% for i in paginator.page_range %}
+            {% if page_obj.number == i %}
+              <li class="page-item active"><span class="page-link">{{ i }} <span class="sr-only">(current)</span></span></li>
+            {% else %}
+              <li class="page-item"><a class="page-link" href="?page={{ i }}">{{ i }}</a></li>
+            {% endif %}
+          {% endfor %}
+          {% if page_obj.has_next %}
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">&raquo;</a></li>
+          {% else %}
+            <li class="disabled page-item"><span class="page-link">&raquo;</span></li>
+          {% endif %}
+        </ul>
+      </nav>
+  {% endif %}
+{% else %}
+  <h1>No short URLs exist yet.</h1>
+  <p>Zero URLs have been shortened as of now.</p>
+  <p><a class="btn btn-primary" href="{% url 'app_urls:index' %}" role="button">Shorten some URLs!</a></p>
+{% endif %}
+{% endblock %}
