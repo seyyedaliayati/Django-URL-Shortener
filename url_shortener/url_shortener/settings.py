@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'accounts.apps.AccountsConfig',
     # Third-party apps
     'bootstrap4',
+    'captcha',
 ]
 
 MIDDLEWARE = [
@@ -141,3 +142,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = 'accounts.User'
 LOGIN_REDIRECT_URL = 'app_urls:index'
 LOGOUT_REDIRECT_URL = 'accounts:login'
+
+# Google ReCaptcha
+RECAPTCHA_PUBLIC_KEY = "6LdsHTMeAAAAAGOi1CBLZbq-GISKKwH1sz8EJ9Po"
+RECAPTCHA_PRIVATE_KEY  = environ.get("RECAPTCHA_PRIVATE_KEY", "fake-key")
