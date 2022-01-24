@@ -8,7 +8,6 @@
     {% csrf_token %}
     <p>Are you sure you want to delete "{{ object }}"?</p>
     <p><b>There is no undo for this process!</b></p>
-    {% bootstrap_form form %}
     {% buttons %}
     <button type="submit" class="btn btn-danger">
         Confirm
