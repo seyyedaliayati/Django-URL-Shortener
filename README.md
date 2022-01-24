@@ -34,6 +34,13 @@ Since this is a demo project, I committed `.env` files. **Please never commit im
 - django-recaptcha
 
 
+## Screenshots
+![Index Page](./screenshots/index.png "Index Page") 
+
+![Analytics Page](./screenshots/analytics.png "Analytics Page")
+
+![Chart Page](./screenshots/chart.png "Chart Page")
+
 ## Useful Docker Commands
 Here are some code snippets related to setting up this project.
 
