@@ -28,7 +28,8 @@ SECRET_KEY = environ.get("SECRET_KEY", default="fowh932y482h")
 DEBUG = int(environ.get("DEBUG", default=0))
 
 ALLOWED_HOSTS = environ.get("DJANGO_ALLOWED_HOSTS", default="*").split(" ")
-CSRF_TRUSTED_ORIGINS = environ.get("CSRF_TRUSTED_ORIGINS", default="http://localhost https://localhost").split(" ")
+CSRF_TRUSTED_ORIGINS = environ.get(
+    "CSRF_TRUSTED_ORIGINS", default="http://localhost https://localhost").split(" ")
 
 # Application definition
 
@@ -145,4 +146,4 @@ LOGOUT_REDIRECT_URL = 'accounts:login'
 
 # Google ReCaptcha
 RECAPTCHA_PUBLIC_KEY = "6LdsHTMeAAAAAGOi1CBLZbq-GISKKwH1sz8EJ9Po"
-RECAPTCHA_PRIVATE_KEY  = environ.get("RECAPTCHA_PRIVATE_KEY", "fake-key")
+RECAPTCHA_PRIVATE_KEY = environ.get("RECAPTCHA_PRIVATE_KEY", "fake-key")
