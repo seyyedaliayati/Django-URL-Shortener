@@ -85,7 +85,7 @@ Production:
 sudo docker-compose -f docker-compose.prod.yml exec web python manage.py fill_db
 ```
 
-After executing this command and admin user will created for you:
+After executing this command an admin user will created for you:
 
 - **Email:** admin@admin.com
 - **Password:** admin
